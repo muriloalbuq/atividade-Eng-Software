@@ -1,0 +1,76 @@
+#include "totvs.ch"
+#include "tlpp-core.th"
+
+Function ColetarDadosPessoa() as array
+    Local aDados := {} as array
+
+    AAdd(aDados, FWInputBox("Nome", "Nome") )
+    AAdd(aDados, FWInputBox("Idade", "Idade") )
+    AAdd(aDados, FWInputBox("Sexo", "Sexo") )
+    AAdd(aDados, FWInputBox("Altura", "Altura") )
+    AAdd(aDados, FWInputBox("Peso", "Peso") )
+
+    Return aDados
+EndFunction
+
+Function U_PRATICA01() as logical
+    Local lRet := .T. as logical
+    Local aPessoas := {} as array
+    Local aDados as array
+    Local IMC as Numeric
+
+    For i := 1 To 3
+        aDados := ColetarDadosPessoa()
+        AAdd(aPessoas, aDados)
+    Next
+
+    Local Mensagem as character
+    Mensagem := "Confira se as informações inseridas estão corretas:" + CRLF
+
+    For i := 1 To 3
+        aDados := aPessoas[i]
+        Mensagem += "Pessoa " + Str(i) + ":" + CRLF
+        Mensagem += "  Nome. : " + aDados[1] + CRLF
+        Mensagem += "  Idade.. : " + aDados[2] + CRLF
+        Mensagem += "  Sexo... : " + aDados[3] + CRLF
+        Mensagem += "  Altura. : " + aDados[4] + CRLF
+        Mensagem += "  Peso..... : " + aDados[5] + CRLF
+        Mensagem += CRLF
+    Next
+
+    If FWAlertYesNo(Mensagem, "Confirmar Informações")
+        Local aIMCs := {} as array
+
+        For i := 1 To 3
+            aDados := aPessoas[i]
+            IMC := GetDToval(aDados[5]) / (GetDToval(aDados[4]) * GetDToval(aDados[4]))
+            AAdd(aIMCs, {IMC, aDados[1]})
+        Next
+
+        OrdenarIMC(aIMCs)
+    Else
+        FWAlertWarning("Dados não confirmados. Tente novamente")
+        Conout("não passou")
+    Endif    
+
+Return lRet
+
+Static Function OrdenarIMC(aIMCs)
+    Local aIMCsOrdenados := {} as array
+    Local IMC as Numeric
+    Local Nome as character
+
+    aIMCsOrdenados := aIMCs
+    aIMCsOrdenados := Sort(aIMCsOrdenados, {|a, b| a[1] > b[1]})
+
+    Local Mensagem as character
+    Mensagem := "Resultado dos IMCs em ordem decrescente:" + CRLF
+
+    For i := 1 To Len(aIMCsOrdenados)
+        IMC := aIMCsOrdenados[i][1]
+        Nome := aIMCsOrdenados[i][2]
+        Mensagem += "Pessoa " + Str(i) + " (" + Nome + "): IMC = " + cValtoChar(Round(IMC,2)) + " KG/M2" + CRLF
+    Next
+
+    FWAlertInfo(Mensagem, "Resultado - IMC")
+Return
